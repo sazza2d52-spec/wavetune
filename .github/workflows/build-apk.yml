@@ -8,30 +8,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Extract project
-        run: |
-          mkdir project
-          unzip -q wavetune.zip -d project
+    - name: Extract project
+      run: |
+        mkdir project
+        unzip -q wavetune.zip -d project
+        # ফোল্ডারের ভেতর ফোল্ডার থাকলে তা ঠিক করার জন্য
+        if [ -d "project/wavetune" ]; then
+          mv project/wavetune/* project/
+        fi
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
-      - name: Make Gradle executable
-        working-directory: project
-        run: chmod +x gradlew
+    - name: Make Gradle executable
+      working-directory: project
+      run: |
+        if [ ! -f "gradlew" ]; then
+          # যদি কোনো সাবফোল্ডারে থাকে তা খুঁজে বের করার চেষ্টা
+          subfolder=$(find . -name gradlew -exec dirname {} \;)
+          if [ ! -z "$subfolder" ]; then
+            cd $subfolder
+          fi
+        fi
+        chmod +x gradlew
 
-      - name: Build Debug APK
-        working-directory: project
-        run: ./gradlew assembleDebug --stacktrace
+    - name: Build Debug APK
+      working-directory: project
+      run: |
+        if [ ! -f "gradlew" ]; then
+          subfolder=$(find . -name gradlew -exec dirname {} \;)
+          if [ ! -z "$subfolder" ]; then
+            cd $subfolder
+          fi
+        fi
+        ./gradlew assembleDebug --stacktrace
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: WaveTune-APK
-          path: project/app/build/outputs/apk/debug/*.apk
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: WaveTune-APK
+        path: project/**/build/outputs/apk/debug/*.apk
