@@ -30,27 +30,26 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Generate Gradle Wrapper and Build APK
+      - name: Fix Project Structure and Build APK
         run: |
-          # build.gradle ফাইলটি কোন ফোল্ডারে আছে তা খুঁজে বের করা
-          BUILD_GRADLE_PATH=$(find ./extracted_project -name "build.gradle" -print -quit)
-          
-          if [ -z "$BUILD_GRADLE_PATH" ]; then
-            # যদি build.gradle না পাওয়া যায়, তবে build.gradle.kts খোঁজা
-            BUILD_GRADLE_PATH=$(find ./extracted_project -name "build.gradle.kts" -print -quit)
+          # যদি app ফোল্ডারটি সরাসরি extracted_project এর ভেতর থাকে
+          if [ -d "./extracted_project/app" ]; then
+            MAIN_DIR="./extracted_project"
+          else
+            # অন্যথায় যেখানে app ফোল্ডার আছে তার প্যারেন্ট ডিরেক্টরি খুঁজে বের করা
+            APP_PATH=$(find ./extracted_project -type d -name "app" -print -quit)
+            if [ -z "$APP_PATH" ]; then
+              echo "Error: 'app' folder not found inside the zip!"
+              exit 1
+            fi
+            MAIN_DIR=$(dirname "$APP_PATH")
           fi
           
-          if [ -z "$BUILD_GRADLE_PATH" ]; then
-            echo "Error: Android project (build.gradle) not found inside the zip!"
-            exit 1
-          fi
+          echo "Main Android project root is: $MAIN_DIR"
+          cd "$MAIN_DIR"
           
-          BUILD_DIR=$(dirname "$BUILD_GRADLE_PATH")
-          echo "Found Android project folder in: $BUILD_DIR"
-          cd "$BUILD_DIR"
-          
-          # নতুন গ্র্যাডল র‍্যাপার (gradlew) জেনারেট করা
-          echo "Generating missing gradle wrapper..."
+          # মেইন রুট ডিরেক্টরিতে গ্র্যাডল র‍্যাপার তৈরি করা
+          echo "Generating gradle wrapper in root directory..."
           gradle wrapper --gradle-version 8.3
           
           # পারমিশন দিয়ে বিল্ড রান করা
