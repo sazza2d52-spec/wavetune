@@ -48,8 +48,11 @@ jobs:
           echo "Main Android project root is: $MAIN_DIR"
           cd "$MAIN_DIR"
           
-          # রানার নিজেই গ্র্যাডল এবং জাভা ২১ হ্যান্ডেল করবে, সরাসরি বিল্ড রান করা
-          gradle assembleDebug --stacktrace
+          # গ্র্যাডল র‍্যাপার স্ক্রিপ্টকে এক্সিকিউট করার পারমিশন দেওয়া
+          chmod +x gradlew
+          
+          # লোকাল র‍্যাপার দিয়ে বিল্ড রান করা
+          ./gradlew assembleDebug --stacktrace
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
