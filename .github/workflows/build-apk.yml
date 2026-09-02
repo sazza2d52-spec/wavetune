@@ -30,19 +30,28 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Auto-Locate and Build APK
+      - name: Generate Gradle Wrapper and Build APK
         run: |
-          # আনজিপ হওয়া ফোল্ডারের ভেতর gradlew ফাইলটি খুঁজে বের করা
-          GRADLEW_PATH=$(find ./extracted_project -name "gradlew" -print -quit)
+          # build.gradle ফাইলটি কোন ফোল্ডারে আছে তা খুঁজে বের করা
+          BUILD_GRADLE_PATH=$(find ./extracted_project -name "build.gradle" -print -quit)
           
-          if [ -z "$GRADLEW_PATH" ]; then
-            echo "Error: gradlew file not found inside the zip!"
+          if [ -z "$BUILD_GRADLE_PATH" ]; then
+            # যদি build.gradle না পাওয়া যায়, তবে build.gradle.kts খোঁজা
+            BUILD_GRADLE_PATH=$(find ./extracted_project -name "build.gradle.kts" -print -quit)
+          fi
+          
+          if [ -z "$BUILD_GRADLE_PATH" ]; then
+            echo "Error: Android project (build.gradle) not found inside the zip!"
             exit 1
           fi
           
-          BUILD_DIR=$(dirname "$GRADLEW_PATH")
-          echo "Found gradle project in: $BUILD_DIR"
+          BUILD_DIR=$(dirname "$BUILD_GRADLE_PATH")
+          echo "Found Android project folder in: $BUILD_DIR"
           cd "$BUILD_DIR"
+          
+          # নতুন গ্র্যাডল র‍্যাপার (gradlew) জেনারেট করা
+          echo "Generating missing gradle wrapper..."
+          gradle wrapper --gradle-version 8.3
           
           # পারমিশন দিয়ে বিল্ড রান করা
           chmod +x gradlew
