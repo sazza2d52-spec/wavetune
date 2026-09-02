@@ -30,7 +30,7 @@ jobs:
       - name: Setup Gradle Environment
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
+          gradle-version: '8.5.1'
 
       - name: Build APK Directly
         run: |
@@ -47,16 +47,14 @@ jobs:
           
           cd "$MAIN_DIR"
           
-          # যদি গ্র্যাডল ফাইল না থাকে, তবে রানার নিজে থেকেই একটি ফ্রেশ গ্র্যাডল র‍্যাপার জেনারেট করবে
-          if [ ! -f "gradlew" ]; then
-            echo "gradlew not found. Generating a new gradle wrapper..."
-            gradle wrapper --gradle-version 8.7
-          fi
+          # প্লাগইনের চাহিদা অনুযায়ী একদম ৮.৫.১ ভার্সনের র‍্যাপার তৈরি করা
+          echo "Generating wrapper with compatible version 8.5.1..."
+          gradle wrapper --gradle-version 8.5.1
           
           # গ্র্যাডল র‍্যাপার স্ক্রিপ্টকে এক্সিকিউট করার পারমিশন দেওয়া
           chmod +x gradlew
           
-          # কনফিগারেশন ক্যাশ এবং পুরনো ক্যাশ পুরোপুরি ডিজেবল ও ক্লিন করে বিল্ড রান করা
+          # ক্যাশ পুরোপুরি ক্লিন করে ফ্রেশ বিল্ড রান করা
           ./gradlew clean assembleDebug --no-configuration-cache --stacktrace
           
       - name: Upload APK
