@@ -11,6 +11,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Extract wavetune.zip file
+        run: |
+          if [ -f "wavetune.zip" ]; then
+            echo "wavetune.zip found! Extracting..."
+            unzip -q wavetune.zip -d extracted_project
+          else
+            echo "Error: wavetune.zip not found in root directory!"
+            exit 1
+          fi
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -20,9 +30,22 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build APK
+      - name: Auto-Locate and Build APK
         run: |
-          chmod +x gradlew || true
+          # আনজিপ হওয়া ফোল্ডারের ভেতর gradlew ফাইলটি খুঁজে বের করা
+          GRADLEW_PATH=$(find ./extracted_project -name "gradlew" -print -quit)
+          
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "Error: gradlew file not found inside the zip!"
+            exit 1
+          fi
+          
+          BUILD_DIR=$(dirname "$GRADLEW_PATH")
+          echo "Found gradle project in: $BUILD_DIR"
+          cd "$BUILD_DIR"
+          
+          # পারমিশন দিয়ে বিল্ড রান করা
+          chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
