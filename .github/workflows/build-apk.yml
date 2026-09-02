@@ -27,6 +27,11 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle Environment
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.5'
+
       - name: Build APK Directly
         run: |
           # app ফোল্ডারটি ঠিক কোথায় আছে তা খুঁজে বের করা
@@ -42,21 +47,8 @@ jobs:
           
           cd "$MAIN_DIR"
           
-          # প্লাগইনের চাহিদা অনুযায়ী অ্যান্ড্রয়েড গ্রেডল ৮.৫+ এর জন্য ৮.৬ সংস্করণ ইনস্টল করা
-          echo "Installing Gradle 8.6..."
-          wget -q https://gradle.org
-          unzip -q gradle-8.6-bin.zip
-          export PATH=$PWD/gradle-8.6/bin:$PATH
-          
-          # ফ্রেশ র‍্যাপার স্ক্রিপ্ট তৈরি করা
-          echo "Generating wrapper with compatible version 8.6..."
-          gradle wrapper --gradle-version 8.6
-          
-          # গ্র্যাডল র‍্যাপার স্ক্রিপ্টকে এক্সিকিউট করার পারমিশন দেওয়া
-          chmod +x gradlew
-          
-          # ক্যাশ পুরোপুরি ক্লিন করে ফ্রেশ বিল্ড রান করা
-          ./gradlew clean assembleDebug --no-configuration-cache --stacktrace
+          # অফিসিয়াল গ্র্যাডল ৮.৫ দিয়ে সরাসরি বিল্ড করা
+          gradle assembleDebug --no-configuration-cache --stacktrace
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
