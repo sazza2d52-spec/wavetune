@@ -1,1 +1,61 @@
+name: Build WaveTune APK
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract wavetune.zip file
+        run: |
+          if [ -f "wavetune.zip" ]; then
+            echo "wavetune.zip found! Extracting..."
+            unzip -q wavetune.zip -d extracted_project
+          else
+            echo "Error: wavetune.zip not found in root directory!"
+            exit 1
+          fi
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle Environment
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Auto-Detect Version and Build APK
+        run: |
+          if [ -d "./extracted_project/app" ]; then
+            MAIN_DIR="./extracted_project"
+          else
+            APP_PATH=$(find ./extracted_project -type d -name "app" -print -quit)
+            if [ -z "$APP_PATH" ]; then
+              echo "Error: 'app' folder not found inside the zip!"
+              exit 1
+            fi
+            MAIN_DIR=$(dirname "$APP_PATH")
+          fi
+          
+          echo "Main Android project root is: $MAIN_DIR"
+          cd "$MAIN_DIR"
+          
+          # কোনো নির্দিষ্ট ভার্সন উল্লেখ না করে স্বয়ংক্রিয়ভাবে র‍্যাপার তৈরি করা
+          echo "Generating auto-compatible gradle wrapper..."
+          gradle wrapper
+          
+          # পারমিশন দিয়ে বিল্ড রান করা
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+          
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: WaveTune-APK
+          path: "**/build/outputs/apk/debug/*.apk"
