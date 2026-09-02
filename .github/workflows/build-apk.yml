@@ -21,7 +21,7 @@ jobs:
             exit 1
           fi
 
-      - name: Set up Java
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -30,7 +30,7 @@ jobs:
       - name: Setup Gradle Environment
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Auto-Detect Version and Build APK
+      - name: Generate Stable Gradle Wrapper and Build APK
         run: |
           if [ -d "./extracted_project/app" ]; then
             MAIN_DIR="./extracted_project"
@@ -46,9 +46,9 @@ jobs:
           echo "Main Android project root is: $MAIN_DIR"
           cd "$MAIN_DIR"
           
-          # কোনো নির্দিষ্ট ভার্সন উল্লেখ না করে স্বয়ংক্রিয়ভাবে র‍্যাপার তৈরি করা
-          echo "Generating auto-compatible gradle wrapper..."
-          gradle wrapper
+          # সবচেয়ে স্থিতিশীল এবং সামঞ্জস্যপূর্ণ গ্র্যাডল ভার্সন ৮.০ জেনারেট করা
+          echo "Generating stable gradle wrapper version 8.0..."
+          gradle wrapper --gradle-version 8.0
           
           # পারমিশন দিয়ে বিল্ড রান করা
           chmod +x gradlew
