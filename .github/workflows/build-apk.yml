@@ -56,8 +56,8 @@ jobs:
           # গ্র্যাডল র‍্যাপার স্ক্রিপ্টকে এক্সিকিউট করার পারমিশন দেওয়া
           chmod +x gradlew
           
-          # লোকাল র‍্যাপার দিয়ে বিল্ড রান করা
-          ./gradlew assembleDebug --stacktrace
+          # কনফিগারেশন ক্যাশ এবং পুরনো ক্যাশ পুরোপুরি ডিজেবল ও ক্লিন করে বিল্ড রান করা
+          ./gradlew clean assembleDebug --no-configuration-cache --stacktrace
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
