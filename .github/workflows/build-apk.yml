@@ -1,18 +1,37 @@
-name: Check Zip Contents
+name: Build WaveTune APK
 
 on:
   workflow_dispatch:
 
 jobs:
-  check-files:
+  build:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: List Zip Content
+    - name: Extract project
       run: |
-        echo "=== Repository Files ==="
-        ls -la
-        echo "=== Zip Content ==="
-        unzip -l wavetune.zip || echo "Not a valid zip file or file missing!"
+        mkdir project
+        unzip -q wavetune.zip -d project
+
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Setup Gradle and Build APK
+      working-directory: project
+      run: |
+        # প্রজেক্টে গ্র্যাডল না থাকলে নিজে থেকে গ্র্যাডল র‍্যাপার জেনারেট করার কমান্ড
+        gradle wrapper --gradle-version 8.4
+        chmod +x gradlew
+        ./gradlew assembleDebug --stacktrace
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: WaveTune-APK
+        path: project/**/build/outputs/apk/debug/*.apk
