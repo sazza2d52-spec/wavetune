@@ -34,19 +34,24 @@ jobs:
 
       - name: Build APK Directly
         run: |
-          # জিপ ফাইলের ভেতর যেখানেই gradlew স্ক্রিপ্টটি থাকুক না কেন তা খুঁজে বের করা
-          GRADLEW_PATH=$(find ./extracted_project -type f -name "gradlew" -print -quit)
+          # app ফোল্ডারটি ঠিক কোথায় আছে তা খুঁজে বের করা
+          APP_PATH=$(find ./extracted_project -type d -name "app" -print -quit)
           
-          if [ -z "$GRADLEW_PATH" ]; then
-            echo "Error: 'gradlew' file not found anywhere inside the extracted project!"
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: 'app' folder not found inside the zip!"
             exit 1
           fi
           
-          # gradlew ফাইলটি যে ফোল্ডারে আছে সেই ডিরেক্টরি নির্ধারণ করা
-          MAIN_DIR=$(dirname "$GRADLEW_PATH")
-          echo "Main Android project root containing gradlew is: $MAIN_DIR"
+          MAIN_DIR=$(dirname "$APP_PATH")
+          echo "Main Android project root is: $MAIN_DIR"
           
           cd "$MAIN_DIR"
+          
+          # যদি গ্র্যাডল ফাইল না থাকে, তবে রানার নিজে থেকেই একটি ফ্রেশ গ্র্যাডল র‍্যাপার জেনারেট করবে
+          if [ ! -f "gradlew" ]; then
+            echo "gradlew not found. Generating a new gradle wrapper..."
+            gradle wrapper --gradle-version 8.7
+          fi
           
           # গ্র্যাডল র‍্যাপার স্ক্রিপ্টকে এক্সিকিউট করার পারমিশন দেওয়া
           chmod +x gradlew
