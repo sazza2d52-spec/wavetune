@@ -21,7 +21,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build APK
-        working-directory: project
         run: |
           chmod +x gradlew || true
           ./gradlew assembleDebug --stacktrace
@@ -30,4 +29,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: WaveTune-APK
-          path: project/**/build/outputs/apk/debug/*.apk
+          path: "**/build/outputs/apk/debug/*.apk"
