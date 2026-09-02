@@ -29,8 +29,10 @@ jobs:
 
       - name: Setup Gradle Environment
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
 
-      - name: Generate Required Gradle Wrapper and Build APK
+      - name: Build APK Directly
         run: |
           if [ -d "./extracted_project/app" ]; then
             MAIN_DIR="./extracted_project"
@@ -46,13 +48,8 @@ jobs:
           echo "Main Android project root is: $MAIN_DIR"
           cd "$MAIN_DIR"
           
-          # প্রজেক্টের রিকোয়ারমেন্ট অনুযায়ী গ্র্যাডল ভার্সন ৮.৭ জেনারেট করা
-          echo "Generating compatible gradle wrapper version 8.7..."
-          gradle wrapper --gradle-version 8.7
-          
-          # পারমিশন দিয়ে বিল্ড রান করা
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          # রানার নিজেই গ্র্যাডল ৮.৭ হ্যান্ডেল করবে, সরাসরি বিল্ড রান করা
+          gradle assembleDebug --stacktrace
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
